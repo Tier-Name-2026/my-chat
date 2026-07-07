@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Мессенджер Pro</title>
+    <link rel="manifest" href="manifest.json">
+  <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background-color: #e5ddd5; display: flex; flex-direction: column; height: 100vh; }
+
+        #chat-window { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+        /* Контейнер для облачка (чтобы управлять его положением) */
+        .message-wrapper { display: flex; flex-direction: column; width: 100%; }
+
+        /* Общие стили для облачков */
+        .message { 
+            max-width: 75%; 
+            padding: 8px 12px 18px 12px; /* Увеличили отступ снизу для времени */
+            border-radius: 12px; 
+            font-size: 16px; 
+            line-height: 1.4; 
+            word-wrap: break-word; 
+            position: relative; /* Важно для позиционирования времени внутри */
+        }
+        
+        .my-message { background-color: #d9fdd3; align-self: flex-end; border-top-right-radius: 0; }
+        .other-message { background-color: #ffffff; align-self: flex-start; border-top-left-radius: 0; }
+
+        /* Стили для служебной информации (время + статус) */
+        .message-meta {
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            font-size: 11px;
+            color: #667781;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            user-select: none;
+        }
+
+        /* Цвет галочек для прочитанных сообщений */
+        .status-ticks { color: #53bdeb; font-weight: bold; }
+
+        /* Панель ввода */
+        #input-panel { display: flex; padding: 10px; background-color: #f0f0f0; gap: 10px; align-items: center; }
+        #message-input { flex: 1; padding: 12px; border: none; border-radius: 20px; font-size: 16px; outline: none; }
+        #send-btn { background-color: #00a884; color: white; border: none; padding: 12px 20px; border-radius: 20px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="chat-window">
+        <!-- Пример входящего сообщения со временем -->
+        <div class="message-wrapper">
+            <div class="message other-message">
+                Привет! Посмотри на мои новые часы и галочки.
+                <div class="message-meta">
+                    <span class="time">12:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="input-panel">
+        <input type="text" id="message-input" placeholder="Введите сообщение..." autocomplete="off">
+        <button id="send-btn">Отправить</button>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Функция получения текущего времени в формате ЧЧ:ММ
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (text === '') return;
+
+            // 1. Создаем обертку
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('message-wrapper');
+
+            // 2. Создаем облачко сообщения
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'my-message');
+            
+            // Защита: используем textContent для безопасности текста, но нам нужно добавить внутрь блок метаданных
+            const textNode = document.createTextNode(text);
+            messageDiv.appendChild(textNode);
+
+            // 3. Создаем блок для времени и галочек
+            const metaDiv = document.createElement('div');
+            metaDiv.classList.add('message-meta');
+            
+            // Добавляем время
+            const timeSpan = document.createElement('span');
+            timeSpan.classList.add('time');
+            timeSpan.textContent = getCurrentTime();
+            metaDiv.appendChild(timeSpan);
+
+            // Добавляем две галочки (сначала серые, будто доставлено)
+            const ticksSpan = document.createElement('span');
+            ticksSpan.classList.add('status-ticks');
+            ticksSpan.textContent = '✓'; // Одна галочка (отправлено)
+            metaDiv.appendChild(ticksSpan);
+
+            // Собираем все вместе
+            messageDiv.appendChild(metaDiv);
+            wrapper.appendChild(messageDiv);
+            chatWindow.appendChild(wrapper);
+
+            // Очистка ввода
+            messageInput.value = '';
+            messageInput.focus();
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // Имитация изменения статуса: через 1 секунду сообщение "доставлено и прочитано" (две синие галочки)
+            setTimeout(() => {
+                ticksSpan.textContent = '✓✓'; // Две галочки
+            }, 1000);
+
+            // Имитация ответа бота через 2.5 секунды
+            setTimeout(() => {
+                const botWrapper = document.createElement('div');
+                botWrapper.classList.add('message-wrapper');
+
+                const botMessage = document.createElement('div');
+                botMessage.classList.add('message', 'other-message');
+                botMessage.appendChild(document.createTextNode('Классные галочки! Время отправки совпадает.'));
+
+                const botMeta = document.createElement('div');
+                botMeta.classList.add('message-meta');
+                
+                const botTime = document.createElement('span');
+                botTime.classList.add('time');
+                botTime.textContent = getCurrentTime();
+                
+                botMeta.appendChild(botTime);
+                botMessage.appendChild(botMeta);
+                botWrapper.appendChild(botMessage);
+                chatWindow.appendChild(botWrapper);
+                
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }, 2500);
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+   // Регистрация Service Worker для PWA
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Приложение готово к установке!'))
+        .catch(err => console.log('Ошибка регистрации PWA', err));
+}
+    </script>
+
+</body>
+</html>

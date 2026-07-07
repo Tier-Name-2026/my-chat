@@ -1,0 +1,16 @@
+{
+  "nav_baseline": "true",
+  "name": "Мой Мессенджер Pro",
+  "short_name": "Мессенджер",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e5ddd5",
+  "theme_color": "#00a884",
+  "icons": [
+    {
+      "src": "https://flaticon.com",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
